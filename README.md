@@ -1,4 +1,4 @@
 # autocomplate-app
 Elastichsearch ile sorgu metnindeki kelimelerin tamamlanması üzerine kişisel projem.
 
-Senkron Test
+Senkron Test 2
