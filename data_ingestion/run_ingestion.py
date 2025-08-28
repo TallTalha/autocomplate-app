@@ -36,7 +36,7 @@ MAPPING_BODY = {
             }
         }
     },
-    "mapping":{
+    "mappings":{
         "properties":{
             "title":{
                 "type": "text",
