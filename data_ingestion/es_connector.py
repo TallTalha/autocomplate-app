@@ -50,8 +50,8 @@ def create_index_if_not_exists(client: Elasticsearch, index_name: str, mapping_b
     """
     LOG.info(f"'{index_name}' indeksi kontrol ediliyor...")
     try:
-        if not client.indices.exists(index_name):
-            client.indices.create(index=index_name)
+        if not client.indices.exists(index=index_name):
+            client.indices.create(index=index_name, body=mapping_body)
             LOG.info(f"{index_name} adında yeni indeks oluşturuldu.")
         else:
             LOG.warning(f"{index_name} adında zaten bir indeks var!")
