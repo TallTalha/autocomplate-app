@@ -15,7 +15,7 @@ sys.path.append(project_root)
 CSV_FILE = os.path.join(project_root,"data","product.csv")
 
 MAPPING_BODY = {
-    "searching":{
+    "settings":{
         "analysis":{
             "filter":{
                 "autocomplete_edge_ngram_filter":{
