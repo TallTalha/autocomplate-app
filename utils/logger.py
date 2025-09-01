@@ -30,7 +30,7 @@ def setup_logger(name: str, app_dir: str, level: int = logging.INFO) -> None:
     os.makedirs(LOGS_DIR, exist_ok=True)
 
     safe_name = re.sub(r"[^\w\-_.]", "_", name)
-    LOG_FILE = os.path.join(LOGS_DIR, "f{safe_name}.log")
+    LOG_FILE = os.path.join(LOGS_DIR, f"{safe_name}.log")
 
     root_logger = logging.getLogger()
     root_logger.setLevel(level=level)
