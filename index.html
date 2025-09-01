@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autocomplete Test Arayüzü</title>
+    <style>
+        /* Sayfanın temel stil ayarları */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .search-container {
+            position: relative;
+            width: 400px;
+        }
+        /* Arama kutusunun stil ayarları */
+        #searchBox {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 24px;
+            box-sizing: border-box; /* padding'in genişliği etkilememesi için */
+        }
+        /* Öneri listesinin stil ayarları */
+        #suggestionsContainer {
+            position: absolute;
+            width: 100%;
+            border: 1px solid #ddd;
+            border-top: none;
+            max-height: 300px;
+            overflow-y: auto;
+            background-color: white;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        /* Her bir öneri elemanının stili */
+        .suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        .suggestion-item:hover {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="search-container">
+        <input type="text" id="searchBox" placeholder="Ürün adı yazın (örn: sam)...">
+        <div id="suggestionsContainer"></div>
+    </div>
+
+    <script>
+        // --- JavaScript Mantığı (Uygulamanın Beyni) ---
+
+        // 1. Gerekli HTML elemanlarını seçiyoruz
+        const searchBox = document.getElementById('searchBox');
+        const suggestionsContainer = document.getElementById('suggestionsContainer');
+        
+        // 2. Debounce Fonksiyonu (Performans Best Practice'i)
+        // Bu fonksiyon, bir işlem çağırmadan önce belirli bir süre beklememizi sağlar.
+        // Böylece her tuşa basıldığında API'ye istek göndermeyiz.
+        function debounce(func, delay) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
+        // 3. API'den önerileri çeken asenkron fonksiyon
+        const fetchSuggestions = async (query) => {
+            // Arama metni çok kısaysa istek gönderme
+            if (query.length < 2) {
+                displaySuggestions([]); // Öneri listesini temizle
+                return;
+            }
+            
+            try {
+                // Bizim FastAPI sunucumuza istek atıyoruz
+                const response = await fetch(`http://localhost:8000/search?term=${query}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log("API'den gelen veri:", data); // Gelen veriyi konsolda gör
+                displaySuggestions(data.suggestions);
+            } catch (error) {
+                console.error("Öneriler alınırken hata oluştu:", error);
+                displaySuggestions([]); // Hata durumunda listeyi temizle
+            }
+        };
+
+        // 4. Gelen önerileri HTML'de gösteren fonksiyon
+        const displaySuggestions = (suggestions) => {
+            // Önceki önerileri temizle
+            suggestionsContainer.innerHTML = '';
+            
+            if (!suggestions || suggestions.length === 0) {
+                return;
+            }
+
+            // Gelen her bir öneri için yeni bir div oluştur ve konteynere ekle
+            suggestions.forEach(suggestion => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.textContent = suggestion.title;
+                // Öneriye tıklandığında arama kutusunu o metinle doldur (opsiyonel)
+                item.onclick = () => {
+                    searchBox.value = suggestion.title;
+                    displaySuggestions([]);
+                };
+                suggestionsContainer.appendChild(item);
+            });
+        };
+
+        // 5. Arama kutusundaki her 'input' olayını dinle
+        // Debounce ile sarmalayarak, kullanıcı yazmayı bıraktıktan 300ms sonra
+        // API isteğinin yapılmasını sağlıyoruz.
+        searchBox.addEventListener('input', debounce((e) => {
+            fetchSuggestions(e.target.value);
+        }, 300));
+
+    </script>
+</body>
+</html>

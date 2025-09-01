@@ -6,6 +6,9 @@ import os
 import sys
 from typing import Dict, List
 
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from elasticsearch import Elasticsearch
@@ -58,7 +61,21 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan, title="Autocomplete API")
+origins = [
+    "*"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"], # Tüm metotlara (GET, POST vb.) izin ver
+    allow_headers=["*"], # Tüm başlıklara izin ver
+)
+
 LOG = logging.getLogger(__name__)
+
+
 
 # --- API Endpoint'i ---
 @app.get("/search", response_model=SuggestionResponse)
